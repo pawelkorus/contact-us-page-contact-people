@@ -25,20 +25,6 @@ services:
     volumes:
       - db:/var/lib/mysql
 
-#    volumes:
-#      - .:/var/www/html/wp-content/
-#  php:
-#    build:
-#      context: "./"
-#      dockerfile: Dockerfile-php
-#      args:
-#        MYSQL_ROOT_PASSWORD: wp
-#        MYSQL_HOST: db
-#    ports:
-#      - "8000:8000"
-#    volumes:
-#      - ".:/root-dir/wp-content/plugins/contact-us-page-contact-people"
-
 volumes:
   wordpress:
   db:
