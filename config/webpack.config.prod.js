@@ -105,12 +105,12 @@ module.exports = {
 			},
 			{
 				test: /style\.s?css$/,
-				exclude: /(node_modules|bower_components)/,
+				//exclude: /(node_modules|bower_components)/,
 				use: blocksCSSPlugin.extract( extractConfig ),
 			},
 			{
 				test: /editor\.s?css$/,
-				exclude: /(node_modules|bower_components)/,
+				//exclude: /(node_modules|bower_components)/,
 				use: editBlocksCSSPlugin.extract( extractConfig ),
 			},
 			{
