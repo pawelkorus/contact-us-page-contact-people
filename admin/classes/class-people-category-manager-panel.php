@@ -239,9 +239,7 @@ class Category_Manager
 				  		<?php
 				  		$map_type_list = array( 
 							'ROADMAP' 	=> 'ROADMAP', 
-							'SATELLITE' => 'SATELLITE', 
-							'HYBRID' 	=> 'HYBRID',
-							'TERRAIN'	=> 'TERRAIN',
+							'SATELLITE' => 'SATELLITE'
 						);
 				  		?>
                   		<select

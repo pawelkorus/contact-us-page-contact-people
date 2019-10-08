@@ -229,19 +229,9 @@ class Hook_Filter
 	}
 
 	public static function add_new_load_only_script(){
-
-		global $people_contact_admin_init;
-		$google_map_api_key = '';
-		if ( $people_contact_admin_init->is_valid_google_map_api_key() ) {
-			$google_map_api_key = get_option( $people_contact_admin_init->google_map_api_key_option, '' );
-		}
-
-		if ( ! empty( $google_map_api_key ) ) {
-			$google_map_api_key = '&key=' . $google_map_api_key;
-		}
-
 		wp_enqueue_script('jquery-ui-autocomplete', '', array('jquery-ui-widget', 'jquery-ui-position'), '1.8.6');
-		wp_enqueue_script('maps-googleapis','https://maps.googleapis.com/maps/api/js?v=3.exp' . $google_map_api_key );
+		wp_enqueue_script('maps-cz', 'https://api.mapy.cz/loader.js');
+		wp_add_inline_script('maps-cz', 'Loader.load();');
 	}
 
 	public static function admin_header_script() {

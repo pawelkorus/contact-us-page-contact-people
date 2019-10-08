@@ -417,27 +417,35 @@ class AddNew
 			var marker;
 
 			function initialize(){
-			//MAP
-			  var latlng = new google.maps.LatLng(<?php echo $latlng;?>);
-			  var latlng_center = new google.maps.LatLng(<?php echo $latlng_center;?>);
-			  var options = {
-				zoom: <?php echo $zoom_level;?>,
-				center: latlng_center,
+				//MAP
+				var latlng = new google.maps.LatLng(<?php echo $latlng;?>);
+				var latlng_center = new google.maps.LatLng(<?php echo $latlng_center;?>);
+				var options = {
+					zoom: <?php echo $zoom_level;?>,
+					center: latlng_center,
 
-				mapTypeId: google.maps.MapTypeId.<?php echo $map_type;?>
-			  };
+					mapTypeId: google.maps.MapTypeId.<?php echo $map_type;?>
+				};
 
-			  map = new google.maps.Map(document.getElementById("map_canvas"), options);
+				map = new SMap(JAK.gel("map_canvas"), null, null, options);
+				map.addDefaultControls(); 
+				
+				var layer = SMap.DEF_BASE;
+				if('SATELLITE' == mapType) {
+					layer = SMap.DEF_OPHOTO;
+				}
+				map.addDefaultLayer(layer).enable();
+				//GEOCODER
+				//geocoder = new google.maps.Geocoder();
 
-			  //GEOCODER
-			  geocoder = new google.maps.Geocoder();
+				var markerLayer = new SMap.Layer.Marker();
+				map.addLayer(markerLayer).enable();
 
-			  marker = new google.maps.Marker({
-				map: map,
-				draggable: true,
-				position: latlng
-			  });
-
+				marker = new google.maps.Marker({
+					map: map,
+					draggable: true,
+					position: latlng
+				});
 			}
 
 			jQuery(document).ready(function ($) {
@@ -445,7 +453,7 @@ class AddNew
 				initialize();
 
 				function a3_people_reload_map() {
-					var current_lat = $("#c_latitude").val();
+					/*var current_lat = $("#c_latitude").val();
 					var current_lng = $("#c_longitude").val();
 					if ( current_lat != '' && current_lng != '' ) {
 						var current_center = new google.maps.LatLng(current_lat, current_lng);
@@ -453,7 +461,7 @@ class AddNew
 						var current_center = new google.maps.LatLng(<?php echo $latlng_center;?>);
 					}
 					google.maps.event.trigger(map, "resize"); //this fix the problem with not completely map
-					map.setCenter(current_center);
+					map.setCenter(current_center);*/
 				}
 
 				$(document).on( "a3rev-ui-onoff_checkbox-switch", '.show_on_main_page', function( event, value, status ) {

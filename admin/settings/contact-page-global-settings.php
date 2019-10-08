@@ -333,9 +333,7 @@ class Contact_Page_Global_Settings extends People_Contact_Admin_UI
 				'default'	=> 'ROADMAP',
 				'options'		=> array( 
 					'ROADMAP' 	=> 'ROADMAP', 
-					'SATELLITE' => 'SATELLITE', 
-					'HYBRID' 	=> 'HYBRID',
-					'TERRAIN'	=> 'TERRAIN',
+					'SATELLITE' => 'SATELLITE'
 				),
 				'css' 		=> 'width:120px;',
 				'separate_option'	=> true,

@@ -479,9 +479,7 @@ class People_Contact_Contact_Widget_Global_Settings extends People_Contact_Admin
 				'default'	=> 'ROADMAP',
 				'options'		=> array( 
 					'ROADMAP' 	=> 'ROADMAP', 
-					'SATELLITE' => 'SATELLITE', 
-					'HYBRID' 	=> 'HYBRID',
-					'TERRAIN'	=> 'TERRAIN',
+					'SATELLITE' => 'SATELLITE'
 				),
 				'css' 		=> 'width:120px;',
 				'separate_option'	=> true,
@@ -582,10 +580,6 @@ jQuery(document).ready(function ($) {
 
 		if ( 'SATELLITE' == map_type ) {
 			map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-		} else if( 'HYBRID' == map_type ) {
-			map.setMapTypeId(google.maps.MapTypeId.HYBRID);
-		} else if ( 'TERRAIN' == map_type ) {
-			map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
 		} else {
 			map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
 		}

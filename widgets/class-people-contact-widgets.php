@@ -77,12 +77,6 @@ class Widget extends \WP_Widget {
 							case 'G_SATELLITE_MAP':
 								$type = 'SATELLITE';
 								break;
-							case 'G_HYBRID_MAP':
-								$type = 'HYBRID';
-								break;
-							case 'G_PHYSICAL_MAP':
-								$type = 'TERRAIN';
-								break;
 							default:
 								$type = 'ROADMAP';
 								break;
