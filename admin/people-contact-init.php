@@ -35,10 +35,6 @@ function wp_people_contact_init() {
 	}
 
 	wp_people_contact_plugin_textdomain();
-
-	if ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'people-contact-settings', 'people-contact' ) ) ) {
-		add_action( 'admin_notices', array( '\A3Rev\ContactPeople\Hook_Filter', 'map_notice' ), 11 );
-	}
 }
 
 // Add language

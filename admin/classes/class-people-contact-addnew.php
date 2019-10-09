@@ -87,16 +87,6 @@ class AddNew
 	public static function admin_screen_add_edit() {
 		global $people_contact_location_map_settings;
 
-		global $people_contact_admin_init;
-		$google_map_api_key = '';
-		if ( $people_contact_admin_init->is_valid_google_map_api_key() ) {
-			$google_map_api_key = get_option( $people_contact_admin_init->google_map_api_key_option, '' );
-		}
-
-		if ( ! empty( $google_map_api_key ) ) {
-			$google_map_api_key = '&key=' . $google_map_api_key;
-		}
-
 		global $people_contact_admin_interface;
 
 		$address_error_class = '';
@@ -124,16 +114,11 @@ class AddNew
 			$bt_type = 'update_contact';
 			$data    = Data\Profile::get_row( $_GET['id'], '', 'ARRAY_A' );
 			$title   = __('Edit Profile', 'contact-us-page-contact-people' );
-			if ( (trim($data['c_latitude']) == '' || trim($data['c_longitude']) == '' ) && trim($data['c_address']) != '') {
-				$googleapis_url      = 'https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($data['c_address']).'&sensor=false' . $google_map_api_key;
-				$geodata             = file_get_contents($googleapis_url);
-				$geodata             = json_decode($geodata);
-				$data['c_latitude']  = $geodata->results[0]->geometry->location->lat;
-				$data['c_longitude'] = $geodata->results[0]->geometry->location->lng;
-			}
+			
 			if ( trim($data['c_latitude']) != '' && trim($data['c_longitude']) != '' ) {
 				$latlng_center = $latlng = $data['c_latitude'].','.$data['c_longitude'];
 			}
+
 			$bt_value = __('Update', 'contact-us-page-contact-people' );
 
 		}
@@ -412,22 +397,18 @@ class AddNew
 			}
 			?>
 
-			var geocoder;
-			var map;
-			var marker;
-
-			function initialize(){
+			jQuery(document).ready(function ($) {
+				var geocoder;
+				var map;
+				var marker;
 				//MAP
-				var latlng = new google.maps.LatLng(<?php echo $latlng;?>);
-				var latlng_center = new google.maps.LatLng(<?php echo $latlng_center;?>);
-				var options = {
-					zoom: <?php echo $zoom_level;?>,
-					center: latlng_center,
+				var mapType = '<?php echo $map_type; ?>';
+				var zoom = <?php echo $zoom_level; ?>;
+				var latlng = new SMap.Coords(<?php echo $latlng; ?>);
+				var latlng_center = new SMap.Coords(<?php echo $latlng_center;?>);
 
-					mapTypeId: google.maps.MapTypeId.<?php echo $map_type;?>
-				};
-
-				map = new SMap(JAK.gel("map_canvas"), null, null, options);
+				map = new SMap(JAK.gel("map_canvas"), null, zoom);
+				map.setCenter(latlng)
 				map.addDefaultControls(); 
 				
 				var layer = SMap.DEF_BASE;
@@ -435,34 +416,29 @@ class AddNew
 					layer = SMap.DEF_OPHOTO;
 				}
 				map.addDefaultLayer(layer).enable();
-				//GEOCODER
-				//geocoder = new google.maps.Geocoder();
 
 				var markerLayer = new SMap.Layer.Marker();
 				map.addLayer(markerLayer).enable();
 
-				marker = new google.maps.Marker({
-					map: map,
-					draggable: true,
-					position: latlng
-				});
-			}
+				marker = new SMap.Marker(latlng,'marker', {});
+				marker.decorate(SMap.Marker.Feature.Draggable);
+				markerLayer.addMarker(marker);
 
-			jQuery(document).ready(function ($) {
+				var signals = map.getSignals();
+				signals.addListener(window, 'marker-drag-stop', function(e) {
+					var coords = e.target.getCoords();
+					
+					new SMap.Geocoder.Reverse(coords, function(geocoder) {
+						if (!geocoder.getResults()) {
+							return
+						}
 
-				initialize();
-
-				function a3_people_reload_map() {
-					/*var current_lat = $("#c_latitude").val();
-					var current_lng = $("#c_longitude").val();
-					if ( current_lat != '' && current_lng != '' ) {
-						var current_center = new google.maps.LatLng(current_lat, current_lng);
-					} else {
-						var current_center = new google.maps.LatLng(<?php echo $latlng_center;?>);
-					}
-					google.maps.event.trigger(map, "resize"); //this fix the problem with not completely map
-					map.setCenter(current_center);*/
-				}
+						var item = geocoder.getResults();
+						jQuery('#c_address').removeClass('input_error');
+						jQuery('#c_latitude').val(item.coords.x);
+						jQuery('#c_longitude').val(item.coords.y);
+					});
+				})
 
 				$(document).on( "a3rev-ui-onoff_checkbox-switch", '.show_on_main_page', function( event, value, status ) {
 					$(".show_marker_on_main_map_container").attr('style','display:none;');
@@ -473,16 +449,6 @@ class AddNew
 					}
 				});
 
-				$(document).on('click', '.a3-plugin-ui-panel-box', function(){
-					//if ( $(this).hasClass('google_map_canvas_resized') || $(this).hasClass('box_open') ) return;
-
-					//we have to set center for map after resize, but we need to know center BEFORE we resize it
-					setTimeout( function() {
-						a3_people_reload_map();
-					}, 600 );
-					$(this).addClass('google_map_canvas_resized');
-				});
-
 				$("#c_address").focus(function() {
 					$(this).removeClass('input_error');
 				});
@@ -491,45 +457,31 @@ class AddNew
 					$("#c_address").autocomplete({
 					  //This bit uses the geocoder to fetch address values
 					  source: function(request, response) {
-						geocoder.geocode( {'address': request.term }, function(results, status) {
-						  response($.map(results, function(item) {
-							return {
-							  label:  item.formatted_address,
-							  value: item.formatted_address,
-							  latitude: item.geometry.location.lat(),
-							  longitude: item.geometry.location.lng()
+						new SMap.Geocoder(request.term, function(geocoder) {
+							if (!geocoder.getResults()[0].results.length) {
+								response([]);
 							}
-						  }));
-						})
+
+							response($.map(geocoder.getResults()[0].results, function(item) {
+								return {
+									label: item.label,
+									value: request.term,
+									latitude: item.coords.x,
+									longitude: item.coords.y
+								}
+							}));
+						});
 					  },
 					  //This bit is executed upon selection of an address
 					  select: function(event, ui) {
 						$("#c_latitude").val(ui.item.latitude);
 						$("#c_longitude").val(ui.item.longitude);
-						var location = new google.maps.LatLng(ui.item.latitude, ui.item.longitude);
-						marker.setPosition(location);
+						var location = new SMap.Coords(ui.item.latitude, ui.item.longitude);
+						marker.setCoords(location);
 						map.setCenter(location);
 					  }
 					});
 			  	});
-
-			  //Add listener to marker for reverse geocoding
-			  google.maps.event.addListener(marker, 'drag', function() {
-				geocoder.geocode({'latLng': marker.getPosition()}, function(results, status) {
-				  if (status == google.maps.GeocoderStatus.OK) {
-					if (results[0]) {
-					  $('#c_address').removeClass('input_error').val(results[0].formatted_address);
-					  $('#c_latitude').val(marker.getPosition().lat());
-					  $('#c_longitude').val(marker.getPosition().lng());
-					}
-				  }
-				});
-			  });
-
-			  google.maps.event.addListener(marker, 'dragend', function() {
-			  	map.setCenter(marker.getPosition());
-			  });
-
 			});
 			</script>
 			<div style="clear:both"></div>

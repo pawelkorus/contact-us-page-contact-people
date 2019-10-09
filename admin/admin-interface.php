@@ -1796,62 +1796,6 @@ class People_Contact_Admin_Interface extends People_Contact_Admin_UI
 
 				break;
 
-				// Google Map API Key input
-				case 'google_map_api_key':
-
-					$google_map_api_key        = $this->settings_get_option( $this->google_map_api_key_option );
-					$google_map_api_key_enable = $this->settings_get_option( $this->google_map_api_key_option . '_enable', 0 );
-					if ( ! isset( $value['checked_label'] ) ) $value['checked_label'] = __( 'ON', 'contact-us-page-contact-people' );
-					if ( ! isset( $value['unchecked_label'] ) ) $value['unchecked_label'] = __( 'OFF', 'contact-us-page-contact-people' );
-
-					?><tr valign="top">
-						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $this->google_map_api_key_option; ?>"><?php echo __( 'Google Maps API', 'contact-us-page-contact-people' ); ?></label>
-						</th>
-						<td class="forminp forminp-onoff_checkbox forminp-<?php echo sanitize_title( $value['type'] ) ?>">
-							<input
-								name="<?php echo $this->google_map_api_key_option; ?>_enable"
-                                id="<?php echo $this->google_map_api_key_option; ?>_enable"
-								class="a3rev-ui-onoff_checkbox a3rev-ui-onoff_google_api_key_enable"
-                                checked_label="<?php echo esc_html( $value['checked_label'] ); ?>"
-                                unchecked_label="<?php echo esc_html( $value['unchecked_label'] ); ?>"
-                                type="checkbox"
-								value="1"
-								<?php checked( $google_map_api_key_enable, 1 ); ?>
-								/> <span class="description" style="margin-left:5px;"><?php echo __( 'Switch ON to connect to Google Maps API', 'contact-us-page-contact-people' ); ?></span>
-
-							<div>&nbsp;</div>
-							<div class="a3rev-ui-google-api-key-container" style="<?php if( 1 != $google_map_api_key_enable ) { echo 'display: none;'; } ?>">
-								<div class="a3rev-ui-google-api-key-description"><?php echo sprintf( __( "Enter your existing Google Map API Key below. Don't have a key? Visit <a href='%s' target='_blank'>Google Maps API</a> to create a key", 'contact-us-page-contact-people' ), 'https://developers.google.com/maps/documentation/javascript/get-api-key' ); ?></div>
-								<div class="a3rev-ui-google-api-key-inside 
-									<?php
-									if ( $this->is_valid_google_map_api_key() ) {
-										echo 'a3rev-ui-google-valid-key';
-									} elseif ( '' != $google_map_api_key ) {
-										echo 'a3rev-ui-google-unvalid-key';
-									}
-									?>
-									">
-									<input
-										name="<?php echo $this->google_map_api_key_option; ?>"
-										id="<?php echo $this->google_map_api_key_option; ?>"
-										type="text"
-										style="<?php echo esc_attr( $value['css'] ); ?>"
-										value="<?php echo esc_attr( $google_map_api_key ); ?>"
-										class="a3rev-ui-text a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?> <?php echo esc_attr( $value['class'] ); ?>"
-		                                placeholder="<?php echo __( 'Google Map API Key', 'contact-us-page-contact-people' ); ?>"
-										<?php echo implode( ' ', $custom_attributes ); ?>
-										/>
-									<p class="a3rev-ui-google-valid-key-message"><?php echo __( 'Your Google API Key is valid and automatic font updates are enabled.', 'contact-us-page-contact-people' ); ?></p>
-									<p class="a3rev-ui-google-unvalid-key-message"><?php echo __( 'Please enter a valid Google API Key.', 'contact-us-page-contact-people' ); ?></p>
-								</div>
-							</div>
-						</td>
-					</tr><?php
-
-				break;
-
 				// Manual Check New Version when click on the button instead of wait for daily
 				case 'manual_check_version':
 

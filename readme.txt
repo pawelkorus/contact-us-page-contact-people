@@ -1,3 +1,7 @@
+=== Disclaimer ===
+
+This was fork was created in order to replace Google Maps with Mapy.cz
+
 === Contact Us Page - Contact People ===
 	
 Contributors: a3rev, nguyencongtuan

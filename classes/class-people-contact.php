@@ -438,7 +438,7 @@ class Main {
 				jQuery.each( markers, function ( i, sites ) {
 					var current_object = jQuery("div.people_item<?php echo $unique_id; ?>.people_item_id" + sites[5]);
 					
-					var siteLatLng = SMap.Coords.fromWGS84(sites[2], sites[1]);
+					var siteLatLng = SMap.Coords.fromWGS84(sites[1], sites[2]);
 					bounds.push(siteLatLng);
 					
 					infotext = '<div class="infowindow"><p class="info_title">'+sites[8]+'</p><div class="info_avatar"><img src="'+sites[6]+'" /></div><div><p class="info_title2">'+sites[0]+'</p>';
