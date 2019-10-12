@@ -47,7 +47,11 @@ const fileStyleCSS = path.resolve( theCWD, './dist/blocks.style.build.css' );
  * @returns {string} then size result.
  */
 const getFileSize = filePath => {
-	return fileSize( gzipSize.sync( fs.readFileSync( filePath ) ) );
+	if(fs.existsSync(filePath)) {
+		return fileSize( gzipSize.sync( fs.readFileSync( filePath ) ) );
+	} else {
+		return 'N/A';
+	}
 };
 
 clearConsole();
