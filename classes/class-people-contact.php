@@ -301,18 +301,9 @@ class Main {
 
 		$show_map = ( $people_contact_location_map_settings['hide_maps_frontend'] != 1 ) ? 1 : 0 ;
 
-		$google_map_api_key = '';
 		if ( $show_map != 0 ) {
-			global $people_contact_admin_init;
-			if ( $people_contact_admin_init->is_valid_google_map_api_key() ) {
-				$google_map_api_key = get_option( $people_contact_admin_init->google_map_api_key_option, '' );
-			}
-
-			if ( ! empty( $google_map_api_key ) ) {
-				$google_map_api_key = '&key=' . $google_map_api_key;
-			}
-
-			wp_enqueue_script('maps-googleapis','https://maps.googleapis.com/maps/api/js?v=3.exp' . $google_map_api_key );
+			wp_enqueue_script('maps-cz', 'https://api.mapy.cz/loader.js');
+			wp_add_inline_script('maps-cz', 'Loader.load();');
 		}
 
 		if ( $use_modal_popup ) {
@@ -338,12 +329,12 @@ class Main {
 		$website_icon = $people_contact_grid_view_icon['grid_view_icon_website'];
 		if( trim($website_icon ) == '' ) $website_icon = PEOPLE_CONTACT_IMAGE_URL.'/p_icon_website.png';
 
-			$zoom_level           = $people_contact_location_map_settings['zoom_level'];
-			$map_type             = $people_contact_location_map_settings['map_type'];
-			$map_width_type       = $people_contact_location_map_settings['map_width_type'];
-			$map_width_responsive = $people_contact_location_map_settings['map_width_responsive'];
-			$map_width_fixed      = $people_contact_location_map_settings['map_width_fixed'];
-			$map_height           = $people_contact_location_map_settings['map_height'];
+		$zoom_level           = $people_contact_location_map_settings['zoom_level'];
+		$map_type             = $people_contact_location_map_settings['map_type'];
+		$map_width_type       = $people_contact_location_map_settings['map_width_type'];
+		$map_width_responsive = $people_contact_location_map_settings['map_width_responsive'];
+		$map_width_fixed      = $people_contact_location_map_settings['map_width_fixed'];
+		$map_height           = $people_contact_location_map_settings['map_height'];
 
 		if ( '' == $map_type ) {
 			$map_type = 'ROADMAP';
@@ -372,7 +363,9 @@ class Main {
 		<?php
 		if ( $show_map != 0 ) {
 			?>
-			var infowindow = null;
+			var maxZoomLevel = <?php echo (int) $zoom_level; ?>,
+				mapType = '<?php echo $map_type; ?>';
+
 
 			jQuery(document).ready(function() {
 				initialize<?php echo $unique_id; ?>();
@@ -382,18 +375,24 @@ class Main {
 
 				if ( sites<?php echo $unique_id; ?>.length < 1 ) return false;
 
-				var myOptions = {
-					zoom: <?php echo $zoom_level;?>,
-					mapTypeId: google.maps.MapTypeId.<?php echo $map_type;?>
+				var options = {
+					maxZoom: maxZoomLevel
 				}
-				var map = new google.maps.Map(document.getElementById("map_canvas<?php echo $unique_id; ?>"), myOptions);
+				var map = new SMap(JAK.gel("map_canvas<?php echo $unique_id; ?>"), null, maxZoomLevel, options);
+				
+				var mouse = new SMap.Control.Mouse(SMap.MOUSE_PAN | SMap.MOUSE_WHEEL | SMap.MOUSE_ZOOM);
+				map.addControl(mouse); 
+				
+				var layer = SMap.DEF_BASE;
+				if('SATELLITE' == mapType) {
+					layer = SMap.DEF_OPHOTO;
+				}
+				map.addDefaultLayer(layer).enable();
 
-				setMarkers<?php echo $unique_id; ?>(map, sites<?php echo $unique_id; ?>);
-				infowindow = new google.maps.InfoWindow({
-					content: "loading..."
-				});
-				var bikeLayer = new google.maps.BicyclingLayer();
-				bikeLayer.setMap(map);
+				var markerLayer = new SMap.Layer.Marker();
+				map.addLayer(markerLayer).enable();
+
+				setMarkers<?php echo $unique_id; ?>(map, markerLayer, sites<?php echo $unique_id; ?>);
 			}
 
 			var sites<?php echo $unique_id; ?> = [];
@@ -406,24 +405,6 @@ class Main {
 					$update_lat_lng = false;
 
 					if ( 0 == $value['enable_map_marker'] ) continue;
-
-					if ( (trim($value['c_latitude']) == '' || trim($value['c_longitude']) == '' ) && trim($value['c_address']) != '') {
-						$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($value['c_address']).'&sensor=false' . $google_map_api_key ;
-						$geodata = file_get_contents($url);
-						$geodata = json_decode($geodata);
-						$value['c_latitude'] = $geodata->results[0]->geometry->location->lat;
-						$value['c_longitude'] = $geodata->results[0]->geometry->location->lng;
-
-						$update_lat_lng = true;
-					}
-
-					if ( trim( $value['c_latitude'] ) == '' || trim( $value['c_longitude'] ) == '' ) continue;
-
-					if ( $update_lat_lng ) {
-						$contacts[$key]['c_latitude'] = $value['c_latitude'];
-						$contacts[$key]['c_longitude'] = $value['c_longitude'];
-						Data\Profile::set_lat_lng( $profile_id, $value['c_latitude'], $value['c_longitude'] );
-					}
 
 					$i++;
 
@@ -451,13 +432,15 @@ class Main {
 			}
 			?>
 
-			function setMarkers<?php echo $unique_id; ?>(map, markers) {
+			function setMarkers<?php echo $unique_id; ?>(map, layer, markers) {
 				var infotext = '';
-				var bounds = new google.maps.LatLngBounds ();
+				var bounds = [];
 				jQuery.each( markers, function ( i, sites ) {
 					var current_object = jQuery("div.people_item<?php echo $unique_id; ?>.people_item_id" + sites[5]);
-					var siteLatLng = new google.maps.LatLng(sites[1], sites[2]);
-					bounds.extend (siteLatLng);
+					
+					var siteLatLng = SMap.Coords.fromWGS84(sites[1], sites[2]);
+					bounds.push(siteLatLng);
+					
 					infotext = '<div class="infowindow"><p class="info_title">'+sites[8]+'</p><div class="info_avatar"><img src="'+sites[6]+'" /></div><div><p class="info_title2">'+sites[0]+'</p>';
 					if (sites[4] != '') infotext += '<p class="info_address">'+sites[4]+'</p>';
 
@@ -468,15 +451,15 @@ class Main {
 					}
 
 					infotext += '</div></div>';
-					var marker = new google.maps.Marker({
-						position: siteLatLng,
-						map: map,
-						title: sites[0],
-						zIndex: sites[3],
-						html: infotext,
-						c_id: sites[5]/*,
-						icon :  "/images/market.png"*/
-					});
+
+					var card = new SMap.Card();
+					//card.getHeader().innerHTML = sites[0];
+					card.getBody().innerHTML = infotext;
+
+					var marker = new SMap.Marker(siteLatLng, sites[5], {});
+					marker.decorate(SMap.Marker.Feature.Card, card);
+					layer.addMarker(marker);
+					
 					if ( typeof(sites[1]) != 'undefined' && sites[1] != '' && typeof(sites[2]) != 'undefined' && sites[2] != '' ) {
 						current_object.on( 'click', function(i){
 							var target = jQuery( i.target );
@@ -487,35 +470,20 @@ class Main {
 								}, 200 );
 							}
 							map.setCenter(siteLatLng);
-							infowindow.setContent(marker.html);
-							infowindow.open(map, marker);
+							marker.click();
 						});
 					}
 
-					if (sites[12] != '') {
-						google.maps.event.addListener(marker, "click", function () {
-						var c_id = this.c_id;
-							jQuery( '#contact_people_bt_'+c_id+'_<?php echo $unique_id; ?>' ).click();
-
-							return false;
-						})
-					}
-
-					if ( typeof(sites[1]) != 'undefined' && sites[1] != '' && typeof(sites[2]) != 'undefined' && sites[2] != '' ) {
-						google.maps.event.addListener(marker, 'mouseout', function() {
-						   //infowindow.close();
-						});
-						google.maps.event.addListener(marker, "mouseover", function () {
-							infowindow.setContent(this.html);
-							infowindow.open(map, this);
-						});
-					}
+					// handling marker click can't be setup the same way using mapy.cz
+					// marker click has to open popup as mapy.cz doesn't support mouseover/mouseout
 				});
-				map.setCenter(bounds.getCenter());
-				map.fitBounds(bounds);
+				
+				var mapCenter = map.computeCenterZoom(bounds);
+				var zoom = mapCenter[1] > maxZoomLevel? maxZoomLevel : mapCenter[1];
+				map.setCenterZoom(mapCenter[0], zoom);
 
-				google.maps.event.addListenerOnce(map, 'idle', function(){
-					if( map.getZoom() > <?php echo (int) $zoom_level; ?> ){
+				map.getSignals().addListener(map, 'map-redraw', function() {
+					if( map.getZoom() > <?php echo (int) $zoom_level; ?> ) {
 						map.setZoom(<?php echo $zoom_level;?>);
 					}
 				});

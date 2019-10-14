@@ -282,17 +282,7 @@ class Contact_Page_Global_Settings extends People_Contact_Admin_UI
 			),
 
 			array(
-           		'name'		=> __( 'Google Maps API', 'contact-us-page-contact-people' ),
-           		'desc'		=> __( 'This plugin uses Google Maps. If you use the map with the contact page, profiles, shortcode or widget without a Maps API key set, they will work initially but Google will block access to the maps if there are more than a few accesses per month. Usage of Google Maps API requires a key.', 'contact-us-page-contact-people' ),
-                'type' 		=> 'heading',
-                'id'		=> 'google_map_api_key_settings_box',
-                'is_box'	=> true,
-           	),
-			array(
-                'type' 		=> 'google_map_api_key',
-           	),
-			array(
-            	'name' 		=> __( 'Contact Page Google Map', 'contact-us-page-contact-people' ),
+            	'name' 		=> __( 'Contact Page Map', 'contact-us-page-contact-people' ),
                 'type' 		=> 'heading',
                 'id'		=> 'google_map_settings_box',
                 'is_box'	=> true,
@@ -333,9 +323,7 @@ class Contact_Page_Global_Settings extends People_Contact_Admin_UI
 				'default'	=> 'ROADMAP',
 				'options'		=> array( 
 					'ROADMAP' 	=> 'ROADMAP', 
-					'SATELLITE' => 'SATELLITE', 
-					'HYBRID' 	=> 'HYBRID',
-					'TERRAIN'	=> 'TERRAIN',
+					'SATELLITE' => 'SATELLITE'
 				),
 				'css' 		=> 'width:120px;',
 				'separate_option'	=> true,

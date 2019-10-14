@@ -113,60 +113,6 @@ class People_Contact_Admin_UI
 		return (array)$admin_pages;
 	}
 
-	public function is_valid_google_map_api_key( $cache=true ) {
-		$is_valid = false;
-
-		$this->google_map_api_key  = get_option( $this->google_map_api_key_option, '' );
-		$google_map_api_key_enable = get_option( $this->google_map_api_key_option . '_enable', 0 );
-
-		if ( '' != trim( $this->google_map_api_key ) && 1 == $google_map_api_key_enable ) {
-
-			$google_map_api_key_status = get_transient( $this->google_map_api_key_option . '_status' );
-
-			if ( ! $cache ) {
-				$google_map_api_key_status = null;
-			}
-
-			if ( ! $google_map_api_key_status ) {
-				$respone_api = wp_remote_get( "https://maps.googleapis.com/maps/api/geocode/json?address=Australia&key=" . trim( $this->google_map_api_key ),
-					array(
-						'sslverify' => false,
-						'timeout'   => 45
-					)
-				);
-
-				$response_map = array();
-
-				// Check it is a valid request
-				if ( ! is_wp_error( $respone_api ) ) {
-
-					$json_string = get_magic_quotes_gpc() ? stripslashes( $respone_api['body'] ) : $respone_api['body'];
-					$response_map = json_decode( $json_string, true );
-
-					// Make sure that the valid response from google is not an error message
-					if ( ! isset( $response_map['error_message'] ) ) {
-						$google_map_api_key_status = 'valid';
-					} else {
-						$google_map_api_key_status = 'invalid';
-					}
-
-				} else {
-					$google_map_api_key_status = 'invalid';
-				}
-
-				//caching google map api status for 24 hours
-				set_transient( $this->google_map_api_key_option . '_status', $google_map_api_key_status, 86400 );
-			}
-
-			if ( 'valid' == $google_map_api_key_status ) {
-				$is_valid = true;
-			}
-
-		}
-
-		return $is_valid;
-	}
-
 	public function update_google_map_api_key() {
 		// Enable Google Map API Key
 		if ( isset( $_POST[ $this->google_map_api_key_option . '_enable' ] ) ) {

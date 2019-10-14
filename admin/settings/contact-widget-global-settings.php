@@ -479,9 +479,7 @@ class People_Contact_Contact_Widget_Global_Settings extends People_Contact_Admin
 				'default'	=> 'ROADMAP',
 				'options'		=> array( 
 					'ROADMAP' 	=> 'ROADMAP', 
-					'SATELLITE' => 'SATELLITE', 
-					'HYBRID' 	=> 'HYBRID',
-					'TERRAIN'	=> 'TERRAIN',
+					'SATELLITE' => 'SATELLITE'
 				),
 				'css' 		=> 'width:120px;',
 				'separate_option'	=> true,
@@ -512,26 +510,17 @@ class People_Contact_Contact_Widget_Global_Settings extends People_Contact_Admin
 		$widget_hide_maps_frontend = get_option( 'widget_hide_maps_frontend' );
 		if ( 1 == $widget_hide_maps_frontend ) return;
 
-		global $people_contact_admin_init;
-		$google_map_api_key = '';
-		if ( $people_contact_admin_init->is_valid_google_map_api_key() ) {
-			$google_map_api_key = get_option( $people_contact_admin_init->google_map_api_key_option, '' );
-		}
-
-		if ( ! empty( $google_map_api_key ) ) {
-			$google_map_api_key = '&key=' . $google_map_api_key;
-		}
-
 		wp_enqueue_script('jquery-ui-autocomplete', '', array('jquery-ui-widget', 'jquery-ui-position'), '1.8.6');
-		wp_enqueue_script('maps-googleapis','https://maps.googleapis.com/maps/api/js?v=3.exp' . $google_map_api_key );
+		wp_enqueue_script('maps-cz', 'https://api.mapy.cz/loader.js');
+		wp_add_inline_script('maps-cz', 'Loader.load();');
 
-		global $people_contact_widget_maps;
+		/*global $people_contact_widget_maps;
 		$googleapis_url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($people_contact_widget_maps['widget_location']).'&sensor=false' . $google_map_api_key;
 		$geodata = file_get_contents($googleapis_url);
 		$geodata = json_decode($geodata);
 		$center_lat = $geodata->results[0]->geometry->location->lat;
 		$center_lng = $geodata->results[0]->geometry->location->lng;
-		$latlng_center = $latlng = $center_lat.','.$center_lng;
+		$latlng_center = $latlng = $center_lat.','.$center_lng;*/
 	?>
 <style>
 .a3rev_panel_container #map_canvas {
@@ -582,10 +571,6 @@ jQuery(document).ready(function ($) {
 
 		if ( 'SATELLITE' == map_type ) {
 			map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-		} else if( 'HYBRID' == map_type ) {
-			map.setMapTypeId(google.maps.MapTypeId.HYBRID);
-		} else if ( 'TERRAIN' == map_type ) {
-			map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
 		} else {
 			map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
 		}

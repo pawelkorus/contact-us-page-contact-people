@@ -885,7 +885,7 @@ msgid "Page contents:"
 msgstr ""
 
 #: admin/settings/contact-page-global-settings.php:296
-msgid "Contact Page Google Map"
+msgid "Contact Page Map"
 msgstr ""
 
 #: admin/settings/contact-page-global-settings.php:302
